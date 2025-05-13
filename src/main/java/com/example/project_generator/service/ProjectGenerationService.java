@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 
@@ -140,14 +141,13 @@ public class ProjectGenerationService {
     }
 
     private void generateMavenPom(CustomProjectDescription description) throws IOException {
+        if (description.getDependencies() == null) {
+           description.setDependencies(new HashSet<>());
+        }
+
         Map<String, Object> model = new HashMap<>();
-        Map<String, Object> descriptionMap = new HashMap<>();
-        descriptionMap.put("groupId", description.getGroupId());
-        descriptionMap.put("artifactId", description.getArtifactId());
-        descriptionMap.put("javaVersion", description.getJavaVersion());
-        descriptionMap.put("springBootVersion", description.getSpringBootVersion());
-        descriptionMap.put("dependencies", description.getRequestedDependencies());
-        model.put("description", descriptionMap);
+        model.put("description", description);
+
 
 
         Path pomPath = projectDirectory.resolve("pom.xml");
@@ -157,6 +157,9 @@ public class ProjectGenerationService {
         copyResourceToFile("maven-wrapper/mvnw.cmd", projectDirectory.resolve("mvnw.cmd"));
         copyResourceToFile("maven-wrapper/.mvn/wrapper/maven-wrapper.jar", projectDirectory.resolve(".mvn/wrapper/maven-wrapper.jar"));
         copyResourceToFile("maven-wrapper/.mvn/wrapper/maven-wrapper.properties", projectDirectory.resolve(".mvn/wrapper/maven-wrapper.properties"));
+        if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+           projectDirectory.resolve("mvnw").toFile().setExecutable(true);
+        }
     }
 
 
@@ -196,12 +199,14 @@ public class ProjectGenerationService {
     }
 
     private void copyResourceToFile(String resourcePath, Path targetPath) throws IOException {
-        Files.createDirectories(targetPath.getParent());
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            if (in == null) throw new IOException("Resource not found: " + resourcePath);
-            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+        if (in == null) {
+            throw new IOException("Resource not found: " + resourcePath);
         }
+        Files.createDirectories(targetPath.getParent());
+        Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
+}
 
  
 

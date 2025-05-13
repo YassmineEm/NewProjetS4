@@ -32,7 +32,7 @@ public class DockerComposeContributor implements ProjectContributor {
         Files.createDirectories(projectRoot);
         Map<String, Object> model = new HashMap<>();
         model.put("serviceName", "app");
-        model.put("port", description.getPort() != null ? description.getPort() : 8080);
+        model.put("port", String.valueOf(description.getPort() != null ? description.getPort() : 8080));
         model.put("artifactId", description.getArtifactId());
         model.put("profile", description.getProfile() != null ? description.getProfile() : "dev");
 

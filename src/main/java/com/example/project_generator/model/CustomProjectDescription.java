@@ -42,6 +42,10 @@ public class CustomProjectDescription implements ProjectDescription {
 
     // === Nouveaux ajouts obligatoires ===
 
+    public CustomProjectDescription() {
+        this.dependencies = new HashSet<>();
+    }
+
     @Override
     public BuildSystem getBuildSystem() {
         return switch (buildTool) {

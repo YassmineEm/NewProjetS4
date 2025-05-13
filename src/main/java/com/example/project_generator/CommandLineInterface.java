@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -46,6 +48,11 @@ public class CommandLineInterface implements CommandLineRunner {
         System.out.print("Version Java (défaut: 17): ");
         String javaVersion = scanner.nextLine();
         request.setJavaVersion(javaVersion.isEmpty() ? "17" : javaVersion);
+
+        // Ajoutez ceci après la définition du buildTool
+       System.out.print("Version Spring Boot (défaut: 3.4.4): ");
+       String springBootVersion = scanner.nextLine();
+       request.setSpringBootVersion(springBootVersion.isEmpty() ? "3.4.4" : springBootVersion);
 
         System.out.print("Build tool (1. Maven, 2. Gradle) - défaut 1: ");
         String buildToolChoice = scanner.nextLine();
@@ -87,6 +94,24 @@ public class CommandLineInterface implements CommandLineRunner {
             case 2 -> "en-couches";
             default -> "standard";
         });
+
+        
+        System.out.println("Dépendances disponibles (entrez les numéros séparés par des virgules):");
+        System.out.println("1. Web (Spring Web)");
+        System.out.println("2. JPA (Spring Data JPA)");
+        System.out.print("Votre choix: ");
+        String depChoice = scanner.nextLine();
+
+        Set<String> dependencies = new HashSet<>();
+        if (!depChoice.isEmpty()) {
+        for (String num : depChoice.split(",")) {
+          switch (num.trim()) {
+            case "1": dependencies.add("web"); break;
+            case "2": dependencies.add("data-jpa"); break;
+          }
+       }
+    }
+request.setDependencies(dependencies);
 
         // Entités
         List<String> entities = new ArrayList<>();

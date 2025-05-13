@@ -6,17 +6,17 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>${description.springBootVersion}</version>
+        <version>${description.springBootVersion!'3.4.4'}</version>
         <relativePath/>
     </parent>
     
-    <groupId>${description.groupId}</groupId>
-    <artifactId>${description.artifactId}</artifactId>
-    <version>${description.version}</version>
-    <name>${description.name}</name>
+    <groupId>${description.groupId!'com.example'}</groupId>
+    <artifactId>${description.artifactId!'my-project'}</artifactId>
+    <version>${description.version!'0.0.1-SNAPSHOT'}</version>
+    <name>${description.name!description.artifactId}</name>
     
     <properties>
-        <java.version>${description.javaVersion?replace("^([0-9]+).*", "$1", "r")}</java.version>
+        <java.version>${(description.javaVersion!'17')?replace("^([0-9]+).*", "$1", "r")}</java.version>
     </properties>
     
     <dependencies>
@@ -25,7 +25,8 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         
-        <#list description.dependencies as dependency>
+        <#if description.dependencies??>
+          <#list description.dependencies as dependency>
             <#if dependency == "web">
                 <dependency>
                     <groupId>org.springframework.boot</groupId>
@@ -38,8 +39,8 @@
                     <artifactId>spring-boot-starter-data-jpa</artifactId>
                 </dependency>
             </#if>
-            <!-- Ajouter d'autres dépendances conditionnelles -->
-        </#list>
+          </#list>
+        </#if>
         
         <dependency>
             <groupId>org.springframework.boot</groupId>

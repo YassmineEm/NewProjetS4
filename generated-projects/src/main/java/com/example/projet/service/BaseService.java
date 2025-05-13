@@ -1,4 +1,4 @@
-package org.yassmine.streaming.service;
+package com.example.projet.service;
 
 public class BaseService {
     // TODO: Implement BaseService functionality
