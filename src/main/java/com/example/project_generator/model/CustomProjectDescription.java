@@ -30,6 +30,7 @@ public class CustomProjectDescription implements ProjectDescription {
     private String version = "0.0.1-SNAPSHOT";
     private String packageName;
 
+
     private String javaVersion = "17";
     private String profile = "dev";
     private Integer port = 8080;

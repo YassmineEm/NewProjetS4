@@ -141,10 +141,14 @@ public class ProjectGenerationService {
 
     private void generateMavenPom(CustomProjectDescription description) throws IOException {
         Map<String, Object> model = new HashMap<>();
-        model.put("groupId", description.getGroupId());
-        model.put("artifactId", description.getArtifactId());
-        model.put("javaVersion", description.getJavaVersion());
-        model.put("dependencies", description.getRequestedDependencies());
+        Map<String, Object> descriptionMap = new HashMap<>();
+        descriptionMap.put("groupId", description.getGroupId());
+        descriptionMap.put("artifactId", description.getArtifactId());
+        descriptionMap.put("javaVersion", description.getJavaVersion());
+        descriptionMap.put("springBootVersion", description.getSpringBootVersion());
+        descriptionMap.put("dependencies", description.getRequestedDependencies());
+        model.put("description", descriptionMap);
+
 
         Path pomPath = projectDirectory.resolve("pom.xml");
         generateFromTemplate("pom.xml.ftl", model, pomPath);

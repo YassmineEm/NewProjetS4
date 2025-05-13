@@ -8,8 +8,10 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>FreeMarker template error (DEBUG mode; use RETHROW in production!):
 The following has evaluated to null or missing:
-==> description  [in template "pom.xml.ftl" at line 9, column 20]
+==> description.springBootVersion  [in template "pom.xml.ftl" at line 9, column 20]
 
+----
+Tip: It's the step after the last dot that caused this error, not those before it.
 ----
 Tip: If the failing expression is known to legally refer to something that's sometimes null or missing, either specify a default value like myOptionalVar!myDefault, or use <#if myOptionalVar??>when-present<#else>when-missing</#if>. (These only cover the last step of the expression; to cover the whole expression, use parenthesis: (myOptionalVar.foo)!myDefault, (myOptionalVar.foo)??
 ----
@@ -23,19 +25,17 @@ Java stack trace (for programmers):
 ----
 freemarker.core.InvalidReferenceException: [... Exception message was already printed; see it above ...]
 	at freemarker.core.InvalidReferenceException.getInstance(InvalidReferenceException.java:134)
-	at freemarker.core.UnexpectedTypeException.newDescriptionBuilder(UnexpectedTypeException.java:85)
-	at freemarker.core.UnexpectedTypeException.<init>(UnexpectedTypeException.java:48)
-	at freemarker.core.NonHashException.<init>(NonHashException.java:49)
-	at freemarker.core.Dot._eval(Dot.java:57)
-	at freemarker.core.Expression.eval(Expression.java:101)
+	at freemarker.core.EvalUtil.coerceModelToTextualCommon(EvalUtil.java:486)
+	at freemarker.core.EvalUtil.coerceModelToStringOrMarkup(EvalUtil.java:406)
+	at freemarker.core.EvalUtil.coerceModelToStringOrMarkup(EvalUtil.java:375)
 	at freemarker.core.DollarVariable.calculateInterpolatedStringOrMarkup(DollarVariable.java:104)
 	at freemarker.core.DollarVariable.accept(DollarVariable.java:63)
 	at freemarker.core.Environment.visit(Environment.java:344)
 	at freemarker.core.Environment.visit(Environment.java:350)
 	at freemarker.core.Environment.process(Environment.java:323)
 	at freemarker.template.Template.process(Template.java:383)
-	at com.example.project_generator.service.ProjectGenerationService.generateFromTemplate(ProjectGenerationService.java:188)
-	at com.example.project_generator.service.ProjectGenerationService.generateMavenPom(ProjectGenerationService.java:150)
+	at com.example.project_generator.service.ProjectGenerationService.generateFromTemplate(ProjectGenerationService.java:192)
+	at com.example.project_generator.service.ProjectGenerationService.generateMavenPom(ProjectGenerationService.java:154)
 	at com.example.project_generator.service.ProjectGenerationService.generateBuildFile(ProjectGenerationService.java:104)
 	at com.example.project_generator.service.ProjectGenerationService.generateProject(ProjectGenerationService.java:65)
 	at com.example.project_generator.controller.ProjectGeneratorController.generateProject(ProjectGeneratorController.java:31)
