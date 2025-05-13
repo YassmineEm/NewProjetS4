@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+
 
 @Service
 public class ProjectGenerationService {
@@ -42,8 +42,7 @@ public class ProjectGenerationService {
     @Autowired
     private GitLabCIContributor gitLabCIContributor;
 
-    @Autowired
-    private Map<String, Set<String>> compatibleVersions;
+
 
     @Autowired
     private Map<String, String> dependencyDescriptions;
