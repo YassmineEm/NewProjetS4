@@ -33,7 +33,7 @@ public class ProjectGeneratorController {
         // Créer un ZIP du projet généré
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zipOut = new ZipOutputStream(baos)) {
-           Path projectDir = Paths.get(projectPath.replace(":", "")); // Supprimer les :
+           Path projectDir = Paths.get(projectPath); // Supprimer les :
            addDirectoryToZip(zipOut, projectDir, projectDir);
         } catch (Exception e) {
            throw new IOException("Failed to create ZIP file: " + e.getMessage());

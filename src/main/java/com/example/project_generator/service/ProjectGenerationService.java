@@ -9,8 +9,11 @@ import io.spring.initializr.generator.buildsystem.Dependency;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,12 +60,10 @@ public class ProjectGenerationService {
             description.getArtifactId()
         );
         System.out.println("Architecture: " + description.getArchitectureType());
-        System.out.println("Artificat: " + description.getArtifactId());
+        System.out.println("Artifact: " + description.getArtifactId());
             // 2. Générer le fichier de build approprié
             generateBuildFile(description);
 
-            // 3. Ajouter les dépendances
-            addDependencies(description);
 
             generateEntities(description);
 
@@ -89,7 +90,8 @@ public class ProjectGenerationService {
                 gitLabCIContributor.contribute(projectDirectory);
             }
 
-            return "Project generated successfully in directory: " + projectDirectory;
+            return projectDirectory.toAbsolutePath().toString();
+
 
         } catch (Exception e) {
             throw new ProjectGenerationException("Failed to generate project: " + e.getMessage(), e);
@@ -138,105 +140,66 @@ public class ProjectGenerationService {
     }
 
     private void generateMavenPom(CustomProjectDescription description) throws IOException {
-        StringBuilder pomContent = new StringBuilder();
-        
-        pomContent.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                  .append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n")
-                  .append("         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
-                  .append("         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n")
-                  .append("<modelVersion>4.0.0</modelVersion>\n")
-                  .append("<groupId>").append(description.getGroupId()).append("</groupId>\n")
-                  .append("<artifactId>").append(description.getArtifactId()).append("</artifactId>\n")
-                  .append("<version>1.0-SNAPSHOT</version>\n")
-                  .append("<packaging>jar</packaging>\n\n")
-                  .append("<dependencies>\n");
-
-        for (String dependency : description.getRequestedDependencies().keySet()) {
-            pomContent.append("    <dependency>\n")
-                      .append("        <groupId>").append(dependency).append("</groupId>\n")
-                      .append("        <artifactId>").append(dependency).append("</artifactId>\n")
-                      .append("        <version>").append(dependencyDescriptions.get(dependency)).append("</version>\n")
-                      .append("    </dependency>\n");
-        }
-
-        pomContent.append("</dependencies>\n")
-                  .append("</project>\n");
+        Map<String, Object> model = new HashMap<>();
+        model.put("groupId", description.getGroupId());
+        model.put("artifactId", description.getArtifactId());
+        model.put("javaVersion", description.getJavaVersion());
+        model.put("dependencies", description.getRequestedDependencies());
 
         Path pomPath = projectDirectory.resolve("pom.xml");
-        try (BufferedWriter writer = Files.newBufferedWriter(pomPath)) {
-            writer.write(pomContent.toString());
-        }
+        generateFromTemplate("pom.xml.ftl", model, pomPath);
+
+        copyResourceToFile("maven-wrapper/mvnw", projectDirectory.resolve("mvnw"));
+        copyResourceToFile("maven-wrapper/mvnw.cmd", projectDirectory.resolve("mvnw.cmd"));
+        copyResourceToFile("maven-wrapper/.mvn/wrapper/maven-wrapper.jar", projectDirectory.resolve(".mvn/wrapper/maven-wrapper.jar"));
+        copyResourceToFile("maven-wrapper/.mvn/wrapper/maven-wrapper.properties", projectDirectory.resolve(".mvn/wrapper/maven-wrapper.properties"));
     }
 
-    private void generateGradleBuildGroovy(CustomProjectDescription description) throws IOException {
-        StringBuilder gradleContent = new StringBuilder();
 
-        gradleContent.append("plugins {\n")
-                     .append("    id 'java'\n")
-                     .append("    id 'maven-publish'\n")
-                     .append("}\n\n");
+     private void generateGradleBuildGroovy(CustomProjectDescription description) throws IOException {
+        Map<String, Object> model = new HashMap<>();
+        model.put("groupId", description.getGroupId());
+        model.put("artifactId", description.getArtifactId());
+        model.put("javaVersion", description.getJavaVersion());
+        model.put("springBootVersion", "3.2.5");
+        model.put("dependencies", description.getRequestedDependencies());
 
-        gradleContent.append("group = '").append(description.getGroupId()).append("'\n")
-                     .append("version = '1.0-SNAPSHOT'\n")
-                     .append("sourceCompatibility = '").append(description.getJavaVersion()).append("'\n\n");
-
-        gradleContent.append("repositories {\n")
-                     .append("    mavenCentral()\n")
-                     .append("}\n\n");
-
-        gradleContent.append("dependencies {\n");
-        for (String dependency : description.getRequestedDependencies().keySet()) {
-            gradleContent.append("    implementation '").append(dependency).append("'\n");
-        }
-        gradleContent.append("}\n");
-
-        Path gradlePath = projectDirectory.resolve("build.gradle");
-        try (BufferedWriter writer = Files.newBufferedWriter(gradlePath)) {
-            writer.write(gradleContent.toString());
-        }
+        generateFromTemplate("build.gradle.ftl", model, projectDirectory.resolve("build.gradle"));
+        generateFromTemplate("settings.gradle.ftl", model, projectDirectory.resolve("settings.gradle"));
     }
 
     private void generateGradleBuildKotlin(CustomProjectDescription description) throws IOException {
-        StringBuilder gradleContent = new StringBuilder();
+        Map<String, Object> model = new HashMap<>();
+        model.put("groupId", description.getGroupId());
+        model.put("artifactId", description.getArtifactId());
+        model.put("javaVersion", description.getJavaVersion());
+        model.put("springBootVersion", "3.2.5");
+        model.put("dependencies", description.getRequestedDependencies());
 
-        gradleContent.append("plugins {\n")
-                     .append("    kotlin('jvm') version '1.4.32'\n")
-                     .append("    id 'maven-publish'\n")
-                     .append("}\n\n");
+        generateFromTemplate("build.gradle.kts.ftl", model, projectDirectory.resolve("build.gradle.kts"));
+        generateFromTemplate("settings.gradle.kts.ftl", model, projectDirectory.resolve("settings.gradle.kts"));
+    }
 
-        gradleContent.append("group = '").append(description.getGroupId()).append("'\n")
-                     .append("version = '1.0-SNAPSHOT'\n")
-                     .append("java.sourceCompatibility = JavaVersion.toVersion('").append(description.getJavaVersion()).append("')\n\n");
-
-        gradleContent.append("repositories {\n")
-                     .append("    mavenCentral()\n")
-                     .append("}\n\n");
-
-        gradleContent.append("dependencies {\n");
-        for (String dependency : description.getRequestedDependencies().keySet()) {
-            gradleContent.append("    implementation '").append(dependency).append("'\n");
-        }
-        gradleContent.append("}\n");
-
-        Path gradleKtsPath = projectDirectory.resolve("build.gradle.kts");
-        try (BufferedWriter writer = Files.newBufferedWriter(gradleKtsPath)) {
-            writer.write(gradleContent.toString());
+    private void generateFromTemplate(String templateName, Map<String, Object> model, Path outputPath) throws IOException {
+        try (Writer writer = Files.newBufferedWriter(outputPath)) {
+            freemarker.template.Configuration cfg = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_32);
+            cfg.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "templates");
+            freemarker.template.Template template = cfg.getTemplate(templateName);
+            template.process(model, writer);
+        } catch (Exception e) {
+            throw new IOException("Failed to generate from template: " + templateName, e);
         }
     }
 
-    private void addDependencies(CustomProjectDescription description) throws IOException {
-    // Récupérer les dépendances demandées
-    Map<String, Dependency> requestedDeps = description.getRequestedDependencies();
-    
-    // Si des dépendances sont présentes, on les ajoute au fichier de configuration
-    if (requestedDeps != null && !requestedDeps.isEmpty()) {
-        if (description.getBuildTool().equals("maven")) {
-            addMavenDependencies(requestedDeps);
-        } else if (description.getBuildTool().equals("gradle-groovy") || description.getBuildTool().equals("gradle-kotlin")) {
-            addGradleDependencies(requestedDeps, description.getBuildTool());
+    private void copyResourceToFile(String resourcePath, Path targetPath) throws IOException {
+        Files.createDirectories(targetPath.getParent());
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) throw new IOException("Resource not found: " + resourcePath);
+            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
-}
+
+ 
 
 private void addMavenDependencies(Map<String, Dependency> requestedDeps) throws IOException {
     // Ajoutez ici la logique pour ajouter les dépendances Maven dans le fichier pom.xml
