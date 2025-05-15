@@ -7,5 +7,5 @@ RUN mvn package -DskipTests
 
 # Run stage
 FROM openjdk:17-jdk-slim
-COPY --from=build /app/target/projet.jar app.jar
+COPY --from=build /app/target/football.jar app.jar
 ENTRYPOINT ["java", "-jar", "/app.jar"]

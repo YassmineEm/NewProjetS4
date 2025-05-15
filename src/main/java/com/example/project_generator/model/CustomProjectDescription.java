@@ -62,22 +62,33 @@ public class CustomProjectDescription implements ProjectDescription {
     }
 
     @Override
-    public Map<String, Dependency> getRequestedDependencies() {
-      Map<String, Dependency> map = new HashMap<>();
-      if (dependencies != null) {
+public Map<String, Dependency> getRequestedDependencies() {
+    Map<String, Dependency> map = new HashMap<>();
+
+    // Dictionnaire d'alias -> groupId:artifactId
+    Map<String, String> predefinedDeps = Map.of(
+        "web", "org.springframework.boot:spring-boot-starter-web",
+        "data-jpa", "org.springframework.boot:spring-boot-starter-data-jpa",
+        "security", "org.springframework.boot:spring-boot-starter-security"
+        
+    );
+
+    if (dependencies != null) {
         for (String id : dependencies) {
-            // Supposons que l'ID est au format "groupId:artifactId"
-            String[] parts = id.split(":");
+            String resolved = predefinedDeps.getOrDefault(id, id); 
+            String[] parts = resolved.split(":");
+
             if (parts.length == 2) {
                 map.put(id, Dependency.withCoordinates(parts[0], parts[1]).build());
             } else {
-                // Gestion d'erreur si le format n'est pas bon
                 throw new IllegalArgumentException("Dependency ID must be in format 'groupId:artifactId'");
             }
         }
-     }
-      return map;
     }
+
+    return map;
+}
+
 
     @Override
     public Packaging getPackaging() {

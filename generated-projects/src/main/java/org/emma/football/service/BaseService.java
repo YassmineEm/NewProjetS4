@@ -1,4 +1,4 @@
-package com.example.projet.service;
+package org.emma.football.service;
 
 public class BaseService {
     // TODO: Implement BaseService functionality

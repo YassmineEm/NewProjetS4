@@ -54,10 +54,15 @@ public class CommandLineInterface implements CommandLineRunner {
        String springBootVersion = scanner.nextLine();
        request.setSpringBootVersion(springBootVersion.isEmpty() ? "3.4.4" : springBootVersion);
 
-        System.out.print("Build tool (1. Maven, 2. Gradle) - défaut 1: ");
+        System.out.print("Build tool (1. Maven, 2. Gradle Groovy, 3. Gradle Kotlin) - défaut 1: ");
         String buildToolChoice = scanner.nextLine();
-        request.setBuildTool(buildToolChoice.isEmpty() ? "maven" : 
-                    buildToolChoice.equals("2") ? "gradle" : "maven");
+        request.setBuildTool(
+            switch (buildToolChoice) {
+             case "2" -> "gradle-groovy";
+             case "3" -> "gradle-kotlin";
+             default -> "maven";
+            });
+
         
         System.out.print("Port (défaut: 8080): ");
         String portInput = scanner.nextLine();

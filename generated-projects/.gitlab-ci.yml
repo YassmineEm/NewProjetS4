@@ -17,7 +17,7 @@ build:
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
-      - target/projet.jar
+      - target/football.jar
 
 dockerize:
   stage: dockerize
@@ -25,8 +25,8 @@ dockerize:
   services:
     - docker:dind
   script:
-    - docker build -t y/projet:latest .
-    - docker push y/projet:latest
+    - docker build -t manal-docker/football:latest .
+    - docker push manal-docker/football:latest
 
 deploy:
   stage: deploy
