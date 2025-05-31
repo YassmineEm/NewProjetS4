@@ -60,6 +60,8 @@ public class ProjectGenerationService {
             description.getGroupId(),
             description.getArtifactId()
         );
+        generateMainApplication(description);
+
         System.out.println("Architecture: " + description.getArchitectureType());
         System.out.println("Artifact: " + description.getArtifactId());
            
@@ -140,6 +142,31 @@ public class ProjectGenerationService {
         }
     }
 
+
+    private void generateMainApplication(CustomProjectDescription description) throws IOException {
+        String className = capitalize(description.getArtifactId()) + "Application";
+        String packagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
+        String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase();
+
+        Path mainPath = projectDirectory.resolve("src/main/java/" + packagePath);
+        Files.createDirectories(mainPath);
+
+        Path appFile = mainPath.resolve(className + ".java");
+        if (!Files.exists(appFile)) {
+          String content = "package " + packageName + ";\n\n"
+            + "import org.springframework.boot.SpringApplication;\n"
+            + "import org.springframework.boot.autoconfigure.SpringBootApplication;\n\n"
+            + "@SpringBootApplication\n"
+            + "public class " + className + " {\n"
+            + "    public static void main(String[] args) {\n"
+            + "        SpringApplication.run(" + className + ".class, args);\n"
+            + "    }\n"
+            + "}\n";
+          Files.write(appFile, content.getBytes());
+        }
+    }
+
+
     private void generateMavenPom(CustomProjectDescription description) throws IOException {
         if (description.getDependencies() == null) {
            description.setDependencies(new HashSet<>());
@@ -207,6 +234,13 @@ public class ProjectGenerationService {
         Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 }
+
+
+private String capitalize(String str) {
+    if (str == null || str.isEmpty()) return str;
+    return str.substring(0, 1).toUpperCase() + str.substring(1);
+}
+
 
  
 

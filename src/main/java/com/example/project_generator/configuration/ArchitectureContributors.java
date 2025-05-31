@@ -17,7 +17,7 @@ public class ArchitectureContributors {
 
         switch (architectureType.toLowerCase()) {
             case "en-couches" -> generateLayeredArchitecture(projectRoot, groupId, artifactId);
-            case "hexagonal" -> generateHexagonalArchitecture(projectRoot, groupId);
+            case "hexagonale" -> generateHexagonalArchitecture(projectRoot, groupId);
             default -> generateDefaultArchitecture(projectRoot);
         }
     }
