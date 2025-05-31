@@ -53,7 +53,7 @@ public class ProjectGenerationService {
 
     public String generateProject(CustomProjectDescription description) {
         try {
-            // 1. Configurer l'architecture
+           
             architectureContributors.configureArchitecture(
             description.getArchitectureType(), 
             projectDirectory,
@@ -62,16 +62,16 @@ public class ProjectGenerationService {
         );
         System.out.println("Architecture: " + description.getArchitectureType());
         System.out.println("Artifact: " + description.getArtifactId());
-            // 2. Générer le fichier de build approprié
+           
             generateBuildFile(description);
 
 
             generateEntities(description);
 
-            // 4. Configurer les sockets
+           
             projectSocketContributors.configureSockets();
 
-            // 5. Générer les fichiers Docker si demandé
+            
             if (description.isGenerateDocker()) {
                 dockerFileContributors.setDescription(description);
                 dockerFileContributors.contribute(projectDirectory);
@@ -79,12 +79,12 @@ public class ProjectGenerationService {
                 dockerComposeContributor.contribute(projectDirectory);
             }
 
-            // 6. Générer les manifestes Kubernetes si demandé
+           
             if (description.isGenerateKubernetes()) {
                 subconnectManifestContributors.generateKubernetesManifests();
             }
 
-            // 7. Configurer CI/CD si demandé
+           
             if (description.isGenerateCLCG()) {
                 cicrPluginInContributors.configureCI();
                 gitLabCIContributor.setDescription(description);
@@ -120,17 +120,17 @@ public class ProjectGenerationService {
             Map<String, Object> model = new HashMap<>();
             model.put("entityName", entityName);
     
-            // Convertir le groupId en chemin : ex. "com.example.myapp" -> "com/example/myapp"
+            
             String packagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase() + "/model";
     
-            // Générer le nom de package pour le fichier .java
+            
             String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model";
             model.put("packageName", packageName);
     
             Path entityPath = projectDirectory.resolve("src/main/java/" + packagePath + "/" + entityName + ".java");
             Files.createDirectories(entityPath.getParent());
     
-            // Utilisation de BufferedWriter pour écrire directement le fichier Java
+            
             try (BufferedWriter writer = Files.newBufferedWriter(entityPath)) {
                 writer.write("package " + packageName + ";\n\n");
                 writer.write("public class " + entityName + " {\n");
@@ -211,10 +211,10 @@ public class ProjectGenerationService {
  
 
 private void addMavenDependencies(Map<String, Dependency> requestedDeps) throws IOException {
-    // Ajoutez ici la logique pour ajouter les dépendances Maven dans le fichier pom.xml
+    
     Path pomPath = projectDirectory.resolve("pom.xml");
 
-    // Vous pouvez ici récupérer le contenu existant de pom.xml et y ajouter les nouvelles dépendances
+    
     try (BufferedReader reader = Files.newBufferedReader(pomPath)) {
         StringBuilder content = new StringBuilder();
         String line;
@@ -222,7 +222,7 @@ private void addMavenDependencies(Map<String, Dependency> requestedDeps) throws 
             content.append(line).append(System.lineSeparator());
         }
 
-        // Ajout des nouvelles dépendances dans la section <dependencies>
+        
         for (Map.Entry<String, Dependency> entry : requestedDeps.entrySet()) {
             Dependency dep = entry.getValue();
             content.append("<dependency>").append(System.lineSeparator())
@@ -232,7 +232,7 @@ private void addMavenDependencies(Map<String, Dependency> requestedDeps) throws 
                    .append("</dependency>").append(System.lineSeparator());
         }
 
-        // Écrire le contenu mis à jour dans le fichier
+        
         try (BufferedWriter writer = Files.newBufferedWriter(pomPath)) {
             writer.write(content.toString());
         }
@@ -242,7 +242,7 @@ private void addMavenDependencies(Map<String, Dependency> requestedDeps) throws 
 }
 
 private void addGradleDependencies(Map<String, Dependency> requestedDeps, String buildTool) throws IOException {
-    // Ajout des dépendances dans build.gradle
+    
     Path gradlePath = projectDirectory.resolve(buildTool.equals("gradle-groovy") ? "build.gradle" : "build.gradle.kts");
 
     StringBuilder content = new StringBuilder();
@@ -255,14 +255,14 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
         }
     }
 
-    // Ajouter ces dépendances dans le fichier build.gradle (groovy ou kotlin)
+    
     try (BufferedReader reader = Files.newBufferedReader(gradlePath)) {
         String line;
         while ((line = reader.readLine()) != null) {
             content.append(line).append(System.lineSeparator());
         }
 
-        // Écrire le contenu mis à jour dans le fichier
+    
         try (BufferedWriter writer = Files.newBufferedWriter(gradlePath)) {
             writer.write(content.toString());
         }

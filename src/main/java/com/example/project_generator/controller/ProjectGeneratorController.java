@@ -27,10 +27,10 @@ public class ProjectGeneratorController {
     public ResponseEntity<byte[]> generateProject(@RequestBody CustomProjectRequest request) throws IOException {
         CustomProjectDescription description = converter.convert(request);
     
-        // Générer le projet via le service
+      
         String projectPath = projectGenerationService.generateProject(description);
     
-        // Créer un ZIP du projet généré
+      
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zipOut = new ZipOutputStream(baos)) {
            Path projectDir = Paths.get(projectPath); // Supprimer les :

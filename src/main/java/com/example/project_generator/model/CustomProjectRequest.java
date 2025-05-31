@@ -5,11 +5,11 @@ import java.util.Set;
 
 public class CustomProjectRequest {
 
-    private String architectureType;  // Type d'architecture (par exemple "hexagonale", "en couches", etc.)
-    private boolean generateDocker;   // Générer Dockerfile ?
-    private boolean generateKubernetes;  // Générer Kubernetes ?
-    private boolean generateCLCG;  // Générer le CLCG (CI/CD) ?
-    private List<String> entities;  // Liste des entités (modèles) à générer
+    private String architectureType;  
+    private boolean generateDocker;   
+    private boolean generateKubernetes;  
+    private boolean generateCLCG;  
+    private List<String> entities;  
     private String dockerRepository;
     private String artifactId;
     private String name;
@@ -18,10 +18,10 @@ public class CustomProjectRequest {
     private String profile;
 
     private String groupId;
-    private String buildTool;  // "maven", "gradle-groovy", "gradle-kotlin"
-    private String language;  // "java", "kotlin", "groovy"
-    private String springBootVersion;  // Version Spring Boot choisie
-    private Set<String> dependencies;  // Dependencies choisies
+    private String buildTool;  
+    private String language; 
+    private String springBootVersion;  
+    private Set<String> dependencies; 
 
 
 

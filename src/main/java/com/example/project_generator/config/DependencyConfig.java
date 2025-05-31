@@ -15,7 +15,7 @@ public class DependencyConfig {
         map.put("web", "spring-boot-starter-web");
         map.put("jpa", "spring-boot-starter-data-jpa");
         map.put("security", "spring-boot-starter-security");
-        // Ajoute d'autres dépendances ici si nécessaire
+
         return map;
     }
 }

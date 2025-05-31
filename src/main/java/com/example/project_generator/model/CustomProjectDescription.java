@@ -36,11 +36,11 @@ public class CustomProjectDescription implements ProjectDescription {
     private Integer port = 8080;
     private String dockerRepository = "your-default-repo";
 
-    private String buildTool = "maven"; // "maven", "gradle-groovy", "gradle-kotlin"
+    private String buildTool = "maven"; 
     private String springBootVersion = "3.2.0";
     private Set<String> dependencies = new HashSet<>();
 
-    // === Nouveaux ajouts obligatoires ===
+    
 
     public CustomProjectDescription() {
         this.dependencies = new HashSet<>();
@@ -62,18 +62,18 @@ public class CustomProjectDescription implements ProjectDescription {
     }
 
     @Override
-public Map<String, Dependency> getRequestedDependencies() {
-    Map<String, Dependency> map = new HashMap<>();
+    public Map<String, Dependency> getRequestedDependencies() {
+        Map<String, Dependency> map = new HashMap<>();
 
-    // Dictionnaire d'alias -> groupId:artifactId
-    Map<String, String> predefinedDeps = Map.of(
+   
+      Map<String, String> predefinedDeps = Map.of(
         "web", "org.springframework.boot:spring-boot-starter-web",
         "data-jpa", "org.springframework.boot:spring-boot-starter-data-jpa",
         "security", "org.springframework.boot:spring-boot-starter-security"
         
-    );
+      );
 
-    if (dependencies != null) {
+      if (dependencies != null) {
         for (String id : dependencies) {
             String resolved = predefinedDeps.getOrDefault(id, id); 
             String[] parts = resolved.split(":");
@@ -84,7 +84,7 @@ public Map<String, Dependency> getRequestedDependencies() {
                 throw new IllegalArgumentException("Dependency ID must be in format 'groupId:artifactId'");
             }
         }
-    }
+      }
 
     return map;
 }
@@ -167,7 +167,7 @@ public Map<String, Dependency> getRequestedDependencies() {
     }
 
     public void setJavaVersion(String javaVersion) {
-        this.javaVersion = javaVersion.split("\\.")[0]; // normaliser "17.0.1" -> "17"
+        this.javaVersion = javaVersion.split("\\.")[0]; 
     }
 
     @Override
@@ -180,7 +180,7 @@ public Map<String, Dependency> getRequestedDependencies() {
         return "Custom Project Description";
     }
 
-    // === Champs personnalisés ===
+   
 
     public String getBuildTool() {
         return buildTool;

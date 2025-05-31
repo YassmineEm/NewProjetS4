@@ -29,7 +29,7 @@ public class CommandLineInterface implements CommandLineRunner {
 
         System.out.println("=== Spring Project Generator ===");
         
-        // Collecte des informations de base
+        
         System.out.print("Nom du projet: ");
         request.setName(scanner.nextLine());
 
@@ -49,7 +49,7 @@ public class CommandLineInterface implements CommandLineRunner {
         String javaVersion = scanner.nextLine();
         request.setJavaVersion(javaVersion.isEmpty() ? "17" : javaVersion);
 
-        // Ajoutez ceci après la définition du buildTool
+        
        System.out.print("Version Spring Boot (défaut: 3.4.4): ");
        String springBootVersion = scanner.nextLine();
        request.setSpringBootVersion(springBootVersion.isEmpty() ? "3.4.4" : springBootVersion);
@@ -72,7 +72,7 @@ public class CommandLineInterface implements CommandLineRunner {
         String profile = scanner.nextLine();
         request.setProfile(profile.isEmpty() ? "dev" : profile);
 
-        // Options de génération
+     
         System.out.print("Générer Docker ? (y/n): ");
         request.setGenerateDocker(scanner.nextLine().equalsIgnoreCase("y"));
         
@@ -88,7 +88,6 @@ public class CommandLineInterface implements CommandLineRunner {
         System.out.print("Générer CI/CD (GitLab CI) ? (y/n): ");
         request.setGenerateCLCG(scanner.nextLine().equalsIgnoreCase("y"));
 
-        // Architecture
         System.out.println("Type d'architecture (choisissez un numéro):");
         System.out.println("1. Hexagonale");
         System.out.println("2. En couches");
@@ -118,7 +117,7 @@ public class CommandLineInterface implements CommandLineRunner {
     }
 request.setDependencies(dependencies);
 
-        // Entités
+        
         List<String> entities = new ArrayList<>();
         System.out.println("Entrez les noms des entités (une par ligne, vide pour terminer):");
         while (true) {
@@ -129,11 +128,10 @@ request.setDependencies(dependencies);
         }
         request.setEntities(entities);
 
-        // Génération du projet
+        
         System.out.println("\nGénération du projet en cours...");
         try {
             byte[] zipBytes = projectGeneratorController.generateProject(request).getBody();
-            // Sauvegarder le fichier zip
             String fileName = request.getArtifactId() + ".zip";
             java.nio.file.Files.write(java.nio.file.Path.of(fileName), zipBytes);
             System.out.println("Projet généré avec succès dans le fichier: " + fileName);

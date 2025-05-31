@@ -23,14 +23,14 @@ public class ArchitectureContributors {
     }
 
     private void generateLayeredArchitecture(Path projectRoot, String groupId, String artifactId) throws IOException {
-        // Construire le chemin de base : groupId + artifactId
+        
         String basePackage = groupId.replace(".", "/") + "/" + artifactId.toLowerCase();
         Path mainJavaPath = projectRoot.resolve("src/main/java/" + basePackage);
     
-        // Créer les sous-répertoires
+       
         createDirectories(mainJavaPath, "config", "controller", "model", "repository", "service");
     
-        // Générer les classes de base avec le bon package
+        
         String basePackageName = groupId + "." + artifactId.toLowerCase();
         generateBaseClass(mainJavaPath, "controller", "BaseController", basePackageName);
         generateBaseClass(mainJavaPath, "service", "BaseService", basePackageName);
@@ -38,7 +38,7 @@ public class ArchitectureContributors {
     }
     
     private void generateHexagonalArchitecture(Path projectRoot,String groupId) throws IOException {
-        String basePackage = groupId.replace(".", "/");  // Utilisation dynamique du groupId
+        String basePackage = groupId.replace(".", "/");  
         Path mainJavaPath = projectRoot.resolve("src/main/java/" + basePackage);
 
         createDirectories(mainJavaPath, "application", "domain", "infrastructure", "interfaces", "config");
@@ -50,7 +50,7 @@ public class ArchitectureContributors {
     }
 
     private void generateDefaultArchitecture(Path projectRoot) throws IOException {
-        // Optionnel : générer une structure minimaliste ou vide
+        
         System.out.println("No valid architecture selected, skipping structure generation.");
     }
 
