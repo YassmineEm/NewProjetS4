@@ -94,6 +94,7 @@ public class ProjectGenerationService {
             }
 
             generateTestClass(description);
+            generateGitFiles();
 
 
             return projectDirectory.toAbsolutePath().toString();
@@ -242,6 +243,15 @@ public class ProjectGenerationService {
 
         Files.write(propertiesFile, content.getBytes());
     }
+
+
+    private void generateGitFiles() throws IOException {
+        Map<String, Object> model = new HashMap<>(); 
+
+        generateFromTemplate("gitignore.ftl", model, projectDirectory.resolve(".gitignore"));
+        generateFromTemplate("gitattributes.ftl", model, projectDirectory.resolve(".gitattributes"));
+    }
+
 
 
 
