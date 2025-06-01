@@ -23,6 +23,7 @@ public class CustomProjectRequestToDescriptionConverter {
         description.setSpringBootVersion(request.getSpringBootVersion());
         description.setDependencies(request.getDependencies());
         description.setGroupId(request.getGroupId() != null ? request.getGroupId() : "com.example");
+        description.setMavenVersion(request.getMavenVersion());
         return description;
     }
 }

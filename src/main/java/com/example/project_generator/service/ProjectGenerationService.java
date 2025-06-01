@@ -174,7 +174,7 @@ public class ProjectGenerationService {
 
         Map<String, Object> model = new HashMap<>();
         model.put("description", description);
-
+        model.put("mavenVersion", description.getMavenVersion());
 
 
         Path pomPath = projectDirectory.resolve("pom.xml");
@@ -183,7 +183,8 @@ public class ProjectGenerationService {
         copyResourceToFile("maven-wrapper/mvnw", projectDirectory.resolve("mvnw"));
         copyResourceToFile("maven-wrapper/mvnw.cmd", projectDirectory.resolve("mvnw.cmd"));
         copyResourceToFile("maven-wrapper/.mvn/wrapper/maven-wrapper.jar", projectDirectory.resolve(".mvn/wrapper/maven-wrapper.jar"));
-        copyResourceToFile("maven-wrapper/.mvn/wrapper/maven-wrapper.properties", projectDirectory.resolve(".mvn/wrapper/maven-wrapper.properties"));
+        generateFromTemplate("maven-wrapper.properties.ftl", model, projectDirectory.resolve(".mvn/wrapper/maven-wrapper.properties"));
+
         if (!System.getProperty("os.name").toLowerCase().contains("win")) {
            projectDirectory.resolve("mvnw").toFile().setExecutable(true);
         }

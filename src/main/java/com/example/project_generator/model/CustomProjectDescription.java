@@ -22,6 +22,7 @@ public class CustomProjectDescription implements ProjectDescription {
     private boolean generateKubernetes;
     private boolean generateCLCG;
     private List<String> entities;
+    private String mavenVersion;
 
     private Language language = new JavaLanguage(); 
     private String groupId = "com.example";
@@ -54,6 +55,14 @@ public class CustomProjectDescription implements ProjectDescription {
           case "maven"-> new MavenBuildSystem();
           default -> new MavenBuildSystem();
         };
+    }
+
+    public String getMavenVersion() {
+       return mavenVersion;
+    }
+
+    public void setMavenVersion(String mavenVersion) {
+       this.mavenVersion = mavenVersion;
     }
 
     @Override

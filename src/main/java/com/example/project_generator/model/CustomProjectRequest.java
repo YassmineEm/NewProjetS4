@@ -22,8 +22,17 @@ public class CustomProjectRequest {
     private String language; 
     private String springBootVersion;  
     private Set<String> dependencies; 
+    private String mavenVersion;
 
 
+
+    public String getMavenVersion() {
+        return mavenVersion;
+    }
+
+    public void setMavenVersion(String mavenVersion) {
+        this.mavenVersion = mavenVersion;
+    }
 
     public String getGroupId() {
         return groupId;

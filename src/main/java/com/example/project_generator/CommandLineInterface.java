@@ -2,6 +2,7 @@ package com.example.project_generator;
 
 import com.example.project_generator.controller.ProjectGeneratorController;
 import com.example.project_generator.model.CustomProjectRequest;
+import com.example.project_generator.util.MavenVersionResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -48,6 +49,7 @@ public class CommandLineInterface implements CommandLineRunner {
         System.out.print("Version Java (défaut: 17): ");
         String javaVersion = scanner.nextLine();
         request.setJavaVersion(javaVersion.isEmpty() ? "17" : javaVersion);
+        request.setMavenVersion(MavenVersionResolver.resolve(request.getJavaVersion()));
 
         
        System.out.print("Version Spring Boot (défaut: 3.4.4): ");
