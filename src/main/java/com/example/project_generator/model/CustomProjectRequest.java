@@ -23,8 +23,7 @@ public class CustomProjectRequest {
     private String springBootVersion;  
     private Set<String> dependencies; 
     private String mavenVersion;
-
-
+    
 
     public String getMavenVersion() {
         return mavenVersion;

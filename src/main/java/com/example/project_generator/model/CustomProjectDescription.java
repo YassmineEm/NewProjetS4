@@ -40,7 +40,6 @@ public class CustomProjectDescription implements ProjectDescription {
     private String buildTool = "maven"; 
     private String springBootVersion = "3.2.0";
     private Set<String> dependencies = new HashSet<>();
-
     
 
     public CustomProjectDescription() {
