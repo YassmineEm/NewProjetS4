@@ -6,4 +6,4 @@ services:
       - "${port!"8080"}:${port!"8080"}"
     restart: always
     environment:
-      - SPRING_PROFILES_ACTIVE=${profile!"prod"}
+      SPRING_PROFILES_ACTIVE=${profile!"prod"}
