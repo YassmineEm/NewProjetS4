@@ -359,7 +359,7 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
 }
 
     private void generateDocumentation(CustomProjectDescription description) throws IOException {
-    // === Génération du README.md ===
+   
         Map<String, Object> readmeModel = new HashMap<>();
         readmeModel.put("name", description.getName());
         readmeModel.put("artifactId", description.getArtifactId());
@@ -372,28 +372,9 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
         readmeModel.put("groupId", description.getGroupId());
 
         generateFromTemplate("Readme.md.ftl", readmeModel, projectDirectory.resolve("README.md"));
-
-    // === Génération du SwaggerConfig.java si web est présent ===
-        if (description.getDependencies() != null && description.getDependencies().contains("web")) {
-          String packagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase() + "/config";
-          Path configPath = projectDirectory.resolve("src/main/java/" + packagePath);
-          Files.createDirectories(configPath);
-
-          Map<String, Object> swaggerModel = new HashMap<>();
-          swaggerModel.put("packageName", description.getGroupId() + "." + description.getArtifactId().toLowerCase());
-          swaggerModel.put("name", description.getName());
-          swaggerModel.put("artifactId", description.getArtifactId());
-          swaggerModel.put("version", description.getVersion());
-          swaggerModel.put("description", "API documentation");
-          swaggerModel.put("license", "MIT");
-
-          generateFromTemplate("swagger-config.ftl", swaggerModel, configPath.resolve("SwaggerConfig.java"));
     }
-}
 
    
-
-
     public static class ProjectGenerationException extends RuntimeException {
         public ProjectGenerationException(String message, Throwable cause) {
             super(message, cause);

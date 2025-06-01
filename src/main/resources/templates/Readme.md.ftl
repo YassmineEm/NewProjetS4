@@ -14,8 +14,16 @@ ${architectureType!"Standard"} architecture
 
 ### Prerequisites
 - JDK ${javaVersion}
-- ${buildTool == "maven" ? "Maven" : "Gradle"}
+<#if buildTool == "maven">
+- Maven
+<#else>
+- Gradle
+</#if>
 
 ### Installation
 ```sh
-${buildTool == "maven" ? "./mvnw clean install" : "./gradlew build"}
+<#if buildTool == "maven">
+./mvnw clean install
+<#else>
+./gradlew build
+</#if>
