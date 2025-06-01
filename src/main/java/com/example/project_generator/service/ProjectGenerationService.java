@@ -66,7 +66,7 @@ public class ProjectGenerationService {
         System.out.println("Artifact: " + description.getArtifactId());
            
             generateBuildFile(description);
-
+            generateApplicationProperties(description);
 
             generateEntities(description);
 
@@ -92,6 +92,9 @@ public class ProjectGenerationService {
                 gitLabCIContributor.setDescription(description);
                 gitLabCIContributor.contribute(projectDirectory);
             }
+
+            generateTestClass(description);
+
 
             return projectDirectory.toAbsolutePath().toString();
 
@@ -202,6 +205,45 @@ public class ProjectGenerationService {
         generateFromTemplate("build.gradle.ftl", model, projectDirectory.resolve("build.gradle"));
         generateFromTemplate("settings.gradle.ftl", model, projectDirectory.resolve("settings.gradle"));
     }
+
+
+    private void generateTestClass(CustomProjectDescription description) throws IOException {
+      String basePackagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
+      String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase();
+      String className = capitalize(description.getArtifactId()) + "ApplicationTests";
+
+      Path testPath = projectDirectory.resolve("src/test/java/" + basePackagePath);
+      Files.createDirectories(testPath);
+
+      Path testFile = testPath.resolve(className + ".java");
+
+      String content = "package " + packageName + ";\n\n"
+        + "import org.junit.jupiter.api.Test;\n"
+        + "import org.springframework.boot.test.context.SpringBootTest;\n\n"
+        + "@SpringBootTest\n"
+        + "public class " + className + " {\n\n"
+        + "    @Test\n"
+        + "    void contextLoads() {\n"
+        + "    }\n"
+        + "}\n";
+
+      Files.write(testFile, content.getBytes());
+    }
+
+
+    private void generateApplicationProperties(CustomProjectDescription description) throws IOException {
+        Path resourcesPath = projectDirectory.resolve("src/main/resources");
+        Files.createDirectories(resourcesPath);
+
+        Path propertiesFile = resourcesPath.resolve("application.properties");
+
+        String content = "server.port=" + description.getPort() + "\n"
+                   + "spring.profiles.active=" + description.getProfile() + "\n";
+
+        Files.write(propertiesFile, content.getBytes());
+    }
+
+
 
     private void generateGradleBuildKotlin(CustomProjectDescription description) throws IOException {
         Map<String, Object> model = new HashMap<>();
