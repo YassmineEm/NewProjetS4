@@ -41,6 +41,16 @@ public class CustomProjectDescription implements ProjectDescription {
     private String springBootVersion = "3.2.0";
     private Set<String> dependencies = new HashSet<>();
     private Map<String, Boolean> restEndpoints;
+    private Map<String, List<FieldDefinition>> entityFields;
+
+
+    public Map<String, List<FieldDefinition>> getEntityFields() {
+        return entityFields;
+    }
+
+    public void setEntityFields(Map<String, List<FieldDefinition>> entityFields) {
+       this.entityFields = entityFields;
+    }
 
     public Map<String, Boolean> getRestEndpoints() {
        return restEndpoints;

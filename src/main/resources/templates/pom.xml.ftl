@@ -43,6 +43,24 @@
         </#if>
 
 
+              
+        <#-- Déterminer la version de Lombok en fonction de la version Java -->
+<#assign javaMajor = (description.javaVersion!'17')?replace("^([0-9]+).*", "$1", "r")?number>
+<#assign useLombokVersion = 
+    (javaMajor >= 21)?then("1.18.30", 
+        (javaMajor >= 17)?then("1.18.28", "1.18.24")
+    )
+>
+
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>${useLombokVersion}</version>
+    <scope>provided</scope>
+</dependency>
+
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

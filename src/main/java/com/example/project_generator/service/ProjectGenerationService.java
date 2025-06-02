@@ -2,6 +2,8 @@ package com.example.project_generator.service;
 
 import com.example.project_generator.configuration.*;
 import com.example.project_generator.model.CustomProjectDescription;
+import com.example.project_generator.model.FieldDefinition;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 
@@ -122,30 +125,43 @@ public class ProjectGenerationService {
     }
 
     private void generateEntities(CustomProjectDescription description) throws IOException {
-        for (String entityName : description.getEntities()) {
-            Map<String, Object> model = new HashMap<>();
-            model.put("entityName", entityName);
-    
-            
-            String packagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase() + "/model";
-    
-            
-            String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model";
-            model.put("packageName", packageName);
-    
-            Path entityPath = projectDirectory.resolve("src/main/java/" + packagePath + "/" + entityName + ".java");
-            Files.createDirectories(entityPath.getParent());
-    
-            
-            try (BufferedWriter writer = Files.newBufferedWriter(entityPath)) {
-                writer.write("package " + packageName + ";\n\n");
-                writer.write("public class " + entityName + " {\n");
-                writer.write("    // Define entity fields here\n");
-                writer.write("}\n");
-            }
-        }
-    }
+      Map<String, List<FieldDefinition>> entityFieldsMap = description.getEntityFields();
 
+      for (String entityName : description.getEntities()) {
+        List<FieldDefinition> fields = entityFieldsMap.get(entityName);
+        if (fields == null) continue;
+
+        String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model";
+        String packagePath = packageName.replace(".", "/");
+        Path entityPath = projectDirectory.resolve("src/main/java/" + packagePath + "/" + entityName + ".java");
+        Files.createDirectories(entityPath.getParent());
+
+        try (BufferedWriter writer = Files.newBufferedWriter(entityPath)) {
+            writer.write("package " + packageName + ";\n\n");
+            writer.write("import jakarta.persistence.*;\n");
+            writer.write("import lombok.*;\n");
+            writer.write("import java.time.*;\n\n");
+
+            writer.write("@Entity\n@Data\n@NoArgsConstructor\n@AllArgsConstructor\n@Builder\n");
+            writer.write("public class " + entityName + " {\n\n");
+
+            for (FieldDefinition field : fields) {
+                if (field.isPrimaryKey()) {
+                    writer.write("    @Id\n");
+                    writer.write("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
+                }
+
+                if (field.isNotNull()) {
+                    writer.write("    @Column(nullable = false)\n");
+                }
+
+                writer.write("    private " + field.getType() + " " + field.getName() + ";\n\n");
+            }
+
+            writer.write("}\n");
+        }
+      }
+    }
 
     private void generateMainApplication(CustomProjectDescription description) throws IOException {
         String className = capitalize(description.getArtifactId()) + "Application";
@@ -375,8 +391,30 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
     }
 
     private void generateRestControllers(CustomProjectDescription description) throws IOException {
+    Map<String, List<FieldDefinition>> fieldsMap = description.getEntityFields();
+
     for (String entity : description.getEntities()) {
         if (Boolean.TRUE.equals(description.getRestEndpoints().get(entity))) {
+
+            List<FieldDefinition> fields = fieldsMap.get(entity);
+            FieldDefinition primaryKey = null;
+
+            if (fields != null) {
+                for (FieldDefinition field : fields) {
+                    if (field.isPrimaryKey()) {
+                        primaryKey = field;
+                        break;
+                    }
+                }
+            }
+
+            if (primaryKey == null) {
+                throw new IllegalStateException("Aucune clé primaire définie pour l'entité " + entity);
+            }
+
+            String idType = primaryKey.getType();
+            String idName = primaryKey.getName();
+
             String basePackage = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
             String controllerPackage = basePackage + "/controller";
             String controllerClassName = entity + "Controller";
@@ -386,34 +424,33 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
             Files.createDirectories(controllerPath.getParent());
 
             String content = "package " + packageName + ";\n\n" +
-                    "import org.springframework.web.bind.annotation.*;\n" +
-                    
-                    "import " + description.getGroupId() + "." + description.getArtifactId() + ".model" +"." + entity + ";\n" +
-                    "import java.util.*;\n\n" +
-                    "@RestController\n" +
-                    "@RequestMapping(\"/" + entity.toLowerCase() + "s\")\n" +
-                    "public class " + controllerClassName + " {\n\n" +
-                    "    @GetMapping\n" +
-                    "    public List<" + entity + "> getAll() {\n" +
-                    "        return new ArrayList<>();\n" +
-                    "    }\n\n" +
-                    "    @PostMapping\n" +
-                    "    public " + entity + " create(@RequestBody " + entity + " obj) {\n" +
-                    "        return obj;\n" +
-                    "    }\n\n" +
-                    "    @GetMapping(\"/{id}\")\n" +
-                    "    public " + entity + " getById(@PathVariable Long id) {\n" +
-                    "        return new " + entity + "();\n" +
-                    "    }\n\n" +
-                    "    @PutMapping(\"/{id}\")\n" +
-                    "    public " + entity + " update(@PathVariable Long id, @RequestBody " + entity + " obj) {\n" +
-                    "        return obj;\n" +
-                    "    }\n\n" +
-                    "    @DeleteMapping(\"/{id}\")\n" +
-                    "    public void delete(@PathVariable Long id) {\n" +
-                    "    }\n" +
-                    "}\n";
-
+               "import org.springframework.web.bind.annotation.*;\n" +
+               "import " + description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model." + entity + ";\n" +
+               "import java.util.*;\n\n" +
+               "@RestController\n" +
+               "@RequestMapping(\"/" + entity.toLowerCase() + "s\")\n" +
+               "public class " + controllerClassName + " {\n\n" +
+               "    @GetMapping\n" +
+               "    public List<" + entity + "> getAll() {\n" +
+               "        return new ArrayList<>();\n" +
+               "    }\n\n" +
+               "    @PostMapping\n" +
+               "    public " + entity + " create(@RequestBody " + entity + " obj) {\n" +
+               "        return obj;\n" +
+               "    }\n\n" +
+               "    @GetMapping(\"/{" + idName + "}\")\n" +
+               "    public " + entity + " getById(@PathVariable " + idType + " " + idName + ") {\n" +
+               "        return new " + entity + "();\n" +
+               "    }\n\n" +
+               "    @PutMapping(\"/{" + idName + "}\")\n" +
+               "    public " + entity + " update(@PathVariable " + idType + " " + idName + ", @RequestBody " + entity + " obj) {\n" +
+               "        obj.set" + capitalize(idName) + "(" + idName + ");\n" +
+               "        return obj;\n" +
+               "    }\n\n" +
+               "    @DeleteMapping(\"/{" + idName + "}\")\n" +
+               "    public void delete(@PathVariable " + idType + " " + idName + ") {\n" +
+               "    }\n" +
+               "}\n";
             Files.write(controllerPath, content.getBytes());
         }
     }

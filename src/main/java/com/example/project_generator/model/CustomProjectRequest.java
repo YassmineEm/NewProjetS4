@@ -25,6 +25,16 @@ public class CustomProjectRequest {
     private Set<String> dependencies; 
     private String mavenVersion;
     private Map<String, Boolean> restEndpoints;
+    private Map<String, List<FieldDefinition>> entityFields;
+
+
+    public Map<String, List<FieldDefinition>> getEntityFields() {
+       return entityFields;
+    }
+
+    public void setEntityFields(Map<String, List<FieldDefinition>> entityFields) {
+       this.entityFields = entityFields;
+    }
 
     public Map<String, Boolean> getRestEndpoints() {
         return restEndpoints;

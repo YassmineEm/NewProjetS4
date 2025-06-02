@@ -2,6 +2,7 @@ package com.example.project_generator;
 
 import com.example.project_generator.controller.ProjectGeneratorController;
 import com.example.project_generator.model.CustomProjectRequest;
+import com.example.project_generator.model.FieldDefinition;
 import com.example.project_generator.util.MavenVersionResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +132,36 @@ request.setDependencies(dependencies);
             entities.add(entity);
         }
         request.setEntities(entities);
+        Map<String, List<FieldDefinition>> entityFields = new HashMap<>();
+
+for (String entity : entities) {
+    System.out.println("\n➡️  Définir les champs pour l'entité : " + entity);
+    List<FieldDefinition> fields = new ArrayList<>();
+
+    while (true) {
+        System.out.print("Nom du champ (laisser vide pour terminer): ");
+        String fieldName = scanner.nextLine();
+        if (fieldName.isEmpty()) break;
+
+        System.out.print("Type du champ (String, Long, Integer, Boolean, LocalDate, etc.): ");
+        String fieldType = scanner.nextLine().trim();
+        if (fieldType.isEmpty()) fieldType = "String";
+
+        System.out.print("Est-ce la clé primaire ? (y/n): ");
+        boolean isPrimary = scanner.nextLine().equalsIgnoreCase("y");
+
+        System.out.print("Not null ? (y/n): ");
+        boolean notNull = scanner.nextLine().equalsIgnoreCase("y");
+
+        FieldDefinition field = new FieldDefinition(fieldName, fieldType, isPrimary, notNull);
+        fields.add(field);
+    }
+
+    entityFields.put(entity, fields);
+}
+
+request.setEntityFields(entityFields);
+
 
         Map<String, Boolean> restEndpointChoices = new HashMap<>();
         for (String entity : entities) {
