@@ -69,7 +69,7 @@ public class ProjectGenerationService {
             generateApplicationProperties(description);
 
             generateEntities(description);
-
+            generateRestControllers(description);
            
             projectSocketContributors.configureSockets();
 
@@ -374,7 +374,51 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
         generateFromTemplate("Readme.md.ftl", readmeModel, projectDirectory.resolve("README.md"));
     }
 
-   
+    private void generateRestControllers(CustomProjectDescription description) throws IOException {
+    for (String entity : description.getEntities()) {
+        if (Boolean.TRUE.equals(description.getRestEndpoints().get(entity))) {
+            String basePackage = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
+            String controllerPackage = basePackage + "/controller";
+            String controllerClassName = entity + "Controller";
+            String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".controller";
+
+            Path controllerPath = projectDirectory.resolve("src/main/java/" + controllerPackage + "/" + controllerClassName + ".java");
+            Files.createDirectories(controllerPath.getParent());
+
+            String content = "package " + packageName + ";\n\n" +
+                    "import org.springframework.web.bind.annotation.*;\n" +
+                    
+                    "import " + description.getGroupId() + "." + description.getArtifactId() + ".model" +"." + entity + ";\n" +
+                    "import java.util.*;\n\n" +
+                    "@RestController\n" +
+                    "@RequestMapping(\"/" + entity.toLowerCase() + "s\")\n" +
+                    "public class " + controllerClassName + " {\n\n" +
+                    "    @GetMapping\n" +
+                    "    public List<" + entity + "> getAll() {\n" +
+                    "        return new ArrayList<>();\n" +
+                    "    }\n\n" +
+                    "    @PostMapping\n" +
+                    "    public " + entity + " create(@RequestBody " + entity + " obj) {\n" +
+                    "        return obj;\n" +
+                    "    }\n\n" +
+                    "    @GetMapping(\"/{id}\")\n" +
+                    "    public " + entity + " getById(@PathVariable Long id) {\n" +
+                    "        return new " + entity + "();\n" +
+                    "    }\n\n" +
+                    "    @PutMapping(\"/{id}\")\n" +
+                    "    public " + entity + " update(@PathVariable Long id, @RequestBody " + entity + " obj) {\n" +
+                    "        return obj;\n" +
+                    "    }\n\n" +
+                    "    @DeleteMapping(\"/{id}\")\n" +
+                    "    public void delete(@PathVariable Long id) {\n" +
+                    "    }\n" +
+                    "}\n";
+
+            Files.write(controllerPath, content.getBytes());
+        }
+    }
+}
+
     public static class ProjectGenerationException extends RuntimeException {
         public ProjectGenerationException(String message, Throwable cause) {
             super(message, cause);

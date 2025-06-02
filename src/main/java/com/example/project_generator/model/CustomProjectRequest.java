@@ -1,6 +1,7 @@
 package com.example.project_generator.model;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CustomProjectRequest {
@@ -23,7 +24,15 @@ public class CustomProjectRequest {
     private String springBootVersion;  
     private Set<String> dependencies; 
     private String mavenVersion;
-    
+    private Map<String, Boolean> restEndpoints;
+
+    public Map<String, Boolean> getRestEndpoints() {
+        return restEndpoints;
+    }
+
+    public void setRestEndpoints(Map<String, Boolean> restEndpoints) {
+        this.restEndpoints = restEndpoints;
+    }
 
     public String getMavenVersion() {
         return mavenVersion;

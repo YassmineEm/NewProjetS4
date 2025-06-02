@@ -40,6 +40,16 @@ public class CustomProjectDescription implements ProjectDescription {
     private String buildTool = "maven"; 
     private String springBootVersion = "3.2.0";
     private Set<String> dependencies = new HashSet<>();
+    private Map<String, Boolean> restEndpoints;
+
+    public Map<String, Boolean> getRestEndpoints() {
+       return restEndpoints;
+    }
+
+    public void setRestEndpoints(Map<String, Boolean> restEndpoints) {
+       this.restEndpoints = restEndpoints;
+    }
+
     
 
     public CustomProjectDescription() {

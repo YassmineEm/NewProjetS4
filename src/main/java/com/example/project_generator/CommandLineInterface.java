@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CommandLineInterface implements CommandLineRunner {
@@ -129,6 +131,15 @@ request.setDependencies(dependencies);
             entities.add(entity);
         }
         request.setEntities(entities);
+
+        Map<String, Boolean> restEndpointChoices = new HashMap<>();
+        for (String entity : entities) {
+           System.out.print("Ajouter des endpoints REST pour " + entity + " ? (y/n): ");
+           String input = scanner.nextLine();
+           restEndpointChoices.put(entity, input.equalsIgnoreCase("y"));
+        }
+        request.setRestEndpoints(restEndpointChoices);
+
 
         
         System.out.println("\nGénération du projet en cours...");
