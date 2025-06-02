@@ -17,7 +17,7 @@ public class ArchitectureContributors {
 
         switch (architectureType.toLowerCase()) {
             case "en-couches" -> generateLayeredArchitecture(projectRoot, groupId, artifactId);
-            case "hexagonale" -> generateHexagonalArchitecture(projectRoot, groupId);
+            case "hexagonale" -> generateHexagonalArchitecture(projectRoot, groupId, artifactId);
             default -> generateDefaultArchitecture(projectRoot);
         }
     }
@@ -36,19 +36,21 @@ public class ArchitectureContributors {
         generateBaseClass(mainJavaPath, "repository", "BaseRepository", basePackageName);
     }
     
-    private void generateHexagonalArchitecture(Path projectRoot, String groupId) throws IOException {
-        String basePackage = groupId.replace(".", "/");
+    private void generateHexagonalArchitecture(Path projectRoot, String groupId, String artifactId) throws IOException {
+        String basePackage = groupId.replace(".", "/")+ "/" + artifactId.toLowerCase();
         Path basePath = projectRoot.resolve("src/main/java/" + basePackage);
 
         // Crée les bons dossiers hexagonaux
         createDirectories(basePath,
-            "domain/model",         // Entités métier
+            "domain/model",   // Entités métier
+            "domain/repository",
+            "domain/service",
             "domain/port/in",       // Ports d'entrée (interfaces des cas d'utilisation)
             "domain/port/out",      // Ports de sortie (interfaces vers repo, external API, etc.)
             "application/service",  // Implémentation des cas d'utilisation
             "infrastructure/rest",  // Adapters REST (controllers)
             "infrastructure/persistence", // Adapters de persistance (JPA, JDBC, etc.)
-            "config"                // Optionnel : config Spring Security, Swagger...
+            "infrastructure/config"               // Optionnel : config Spring Security, Swagger...
         );
     }
 
@@ -73,8 +75,14 @@ public class ArchitectureContributors {
     }
 
     private void createDirectories(Path basePath, String... subDirs) throws IOException {
-        for (String dir : subDirs) {
-            Files.createDirectories(basePath.resolve(dir));
-        }
+      for (String dir : subDirs) {
+        Path fullPath = basePath.resolve(dir);
+        Files.createDirectories(fullPath);
+
+        // Ajouter un fichier temporaire vide pour forcer l'inclusion dans le ZIP
+        Path placeholder = fullPath.resolve(".gitkeep");
+        Files.writeString(placeholder, "");  // fichier vide
+      }
     }
 }
+

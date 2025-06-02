@@ -125,14 +125,24 @@ public class ProjectGenerationService {
     }
 
     private void generateEntities(CustomProjectDescription description) throws IOException {
-      Map<String, List<FieldDefinition>> entityFieldsMap = description.getEntityFields();
+    Map<String, List<FieldDefinition>> entityFieldsMap = description.getEntityFields();
 
-      for (String entityName : description.getEntities()) {
+    for (String entityName : description.getEntities()) {
         List<FieldDefinition> fields = entityFieldsMap.get(entityName);
         if (fields == null) continue;
 
-        String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model";
-        String packagePath = packageName.replace(".", "/");
+        String packageName;
+        String packagePath;
+
+        if ("hexagonale".equalsIgnoreCase(description.getArchitectureType())) {
+            // Architecture hexagonale : placer les entités dans domain.model
+            packageName = description.getGroupId() + ".domain.model";
+        } else {
+            // Architecture en couches : placer les entités dans artifactId.model
+            packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model";
+        }
+
+        packagePath = packageName.replace(".", "/");
         Path entityPath = projectDirectory.resolve("src/main/java/" + packagePath + "/" + entityName + ".java");
         Files.createDirectories(entityPath.getParent());
 
@@ -160,8 +170,9 @@ public class ProjectGenerationService {
 
             writer.write("}\n");
         }
-      }
     }
+}
+
 
     private void generateMainApplication(CustomProjectDescription description) throws IOException {
         String className = capitalize(description.getArtifactId()) + "Application";
@@ -426,8 +437,8 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
 
             if ("hexagonale".equalsIgnoreCase(architecture)) {
                 controllerPackagePath = basePackage + "/infrastructure/rest";
-                controllerPackageName = groupId + "." + artifactId + ".infrastructure.rest";
-                modelPackageName = groupId + "." + artifactId + ".domain.model";
+                controllerPackageName = groupId + ".infrastructure.rest";
+                modelPackageName = groupId + ".domain.model";
             } else {
                 controllerPackagePath = basePackage + "/controller";
                 controllerPackageName = groupId + "." + artifactId + ".controller";
