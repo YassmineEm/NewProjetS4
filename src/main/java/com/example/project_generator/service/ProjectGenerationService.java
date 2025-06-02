@@ -136,7 +136,7 @@ public class ProjectGenerationService {
 
         if ("hexagonale".equalsIgnoreCase(description.getArchitectureType())) {
             // Architecture hexagonale : placer les entités dans domain.model
-            packageName = description.getGroupId() + ".domain.model";
+            packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".domain.model";
         } else {
             // Architecture en couches : placer les entités dans artifactId.model
             packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model";
@@ -437,8 +437,8 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
 
             if ("hexagonale".equalsIgnoreCase(architecture)) {
                 controllerPackagePath = basePackage + "/infrastructure/rest";
-                controllerPackageName = groupId + ".infrastructure.rest";
-                modelPackageName = groupId + ".domain.model";
+                controllerPackageName = groupId + "." + artifactId + ".infrastructure.rest";
+                modelPackageName = groupId + "." + artifactId + ".domain.model";
             } else {
                 controllerPackagePath = basePackage + "/controller";
                 controllerPackageName = groupId + "." + artifactId + ".controller";
