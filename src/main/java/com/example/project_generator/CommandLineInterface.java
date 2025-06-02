@@ -4,6 +4,7 @@ import com.example.project_generator.controller.ProjectGeneratorController;
 import com.example.project_generator.model.CustomProjectRequest;
 import com.example.project_generator.model.FieldDefinition;
 import com.example.project_generator.util.MavenVersionResolver;
+import com.example.project_generator.ia.DeepSeekIAService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -25,6 +26,10 @@ public class CommandLineInterface implements CommandLineRunner {
     public CommandLineInterface(ProjectGeneratorController projectGeneratorController) {
         this.projectGeneratorController = projectGeneratorController;
     }
+
+    @Autowired
+    private DeepSeekIAService deepSeekIAService;
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -171,8 +176,23 @@ request.setEntityFields(entityFields);
         }
         request.setRestEndpoints(restEndpointChoices);
 
+        System.out.println("\n🤖 Recommandations IA (DeepSeek) :");
 
-        
+        String summary = String.format("""
+        Projet: %s
+        Dépendances: %s
+        Docker: %s
+        Kubernetes: %s
+        Architecture: %s
+        """, 
+        request.getArtifactId(),
+        request.getDependencies(),
+        request.isGenerateDocker(),
+        request.isGenerateKubernetes(),
+        request.getArchitectureType());
+
+        System.out.println(deepSeekIAService.getSecurityAdvice(summary));
+
         System.out.println("\nGénération du projet en cours...");
         try {
             byte[] zipBytes = projectGeneratorController.generateProject(request).getBody();
