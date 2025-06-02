@@ -391,10 +391,15 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
     }
 
     private void generateRestControllers(CustomProjectDescription description) throws IOException {
-    Map<String, List<FieldDefinition>> fieldsMap = description.getEntityFields();
+       Map<String, List<FieldDefinition>> fieldsMap = description.getEntityFields();
+       String architecture = description.getArchitectureType();
+       String groupId = description.getGroupId();
+       String artifactId = description.getArtifactId().toLowerCase();
 
-    for (String entity : description.getEntities()) {
-        if (Boolean.TRUE.equals(description.getRestEndpoints().get(entity))) {
+       String basePackage = groupId.replace(".", "/") + "/" + artifactId;
+
+       for (String entity : description.getEntities()) {
+          if (Boolean.TRUE.equals(description.getRestEndpoints().get(entity))) {
 
             List<FieldDefinition> fields = fieldsMap.get(entity);
             FieldDefinition primaryKey = null;
@@ -415,17 +420,27 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
             String idType = primaryKey.getType();
             String idName = primaryKey.getName();
 
-            String basePackage = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
-            String controllerPackage = basePackage + "/controller";
-            String controllerClassName = entity + "Controller";
-            String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".controller";
+            String controllerPackagePath;
+            String controllerPackageName;
+            String modelPackageName;
 
-            Path controllerPath = projectDirectory.resolve("src/main/java/" + controllerPackage + "/" + controllerClassName + ".java");
+            if ("hexagonale".equalsIgnoreCase(architecture)) {
+                controllerPackagePath = basePackage + "/infrastructure/rest";
+                controllerPackageName = groupId + "." + artifactId + ".infrastructure.rest";
+                modelPackageName = groupId + "." + artifactId + ".domain.model";
+            } else {
+                controllerPackagePath = basePackage + "/controller";
+                controllerPackageName = groupId + "." + artifactId + ".controller";
+                modelPackageName = groupId + "." + artifactId + ".model";
+            }
+
+            String controllerClassName = entity + "Controller";
+            Path controllerPath = projectDirectory.resolve("src/main/java/" + controllerPackagePath + "/" + controllerClassName + ".java");
             Files.createDirectories(controllerPath.getParent());
 
-            String content = "package " + packageName + ";\n\n" +
+            String content = "package " + controllerPackageName + ";\n\n" +
                "import org.springframework.web.bind.annotation.*;\n" +
-               "import " + description.getGroupId() + "." + description.getArtifactId().toLowerCase() + ".model." + entity + ";\n" +
+               "import " + modelPackageName + "." + entity + ";\n" +
                "import java.util.*;\n\n" +
                "@RestController\n" +
                "@RequestMapping(\"/" + entity.toLowerCase() + "s\")\n" +
@@ -451,10 +466,12 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
                "    public void delete(@PathVariable " + idType + " " + idName + ") {\n" +
                "    }\n" +
                "}\n";
+
             Files.write(controllerPath, content.getBytes());
         }
     }
 }
+
 
     public static class ProjectGenerationException extends RuntimeException {
         public ProjectGenerationException(String message, Throwable cause) {

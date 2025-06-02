@@ -32,22 +32,26 @@ public class ArchitectureContributors {
     
         
         String basePackageName = groupId + "." + artifactId.toLowerCase();
-        generateBaseClass(mainJavaPath, "controller", "BaseController", basePackageName);
         generateBaseClass(mainJavaPath, "service", "BaseService", basePackageName);
         generateBaseClass(mainJavaPath, "repository", "BaseRepository", basePackageName);
     }
     
-    private void generateHexagonalArchitecture(Path projectRoot,String groupId) throws IOException {
-        String basePackage = groupId.replace(".", "/");  
-        Path mainJavaPath = projectRoot.resolve("src/main/java/" + basePackage);
+    private void generateHexagonalArchitecture(Path projectRoot, String groupId) throws IOException {
+        String basePackage = groupId.replace(".", "/");
+        Path basePath = projectRoot.resolve("src/main/java/" + basePackage);
 
-        createDirectories(mainJavaPath, "application", "domain", "infrastructure", "interfaces", "config");
-
-        generateBaseClass(mainJavaPath, "domain", "DomainEntity",groupId);
-        generateBaseClass(mainJavaPath, "domain", "DomainService",groupId);
-        generateBaseClass(mainJavaPath, "application", "ApplicationService",groupId);
-        generateBaseClass(mainJavaPath, "interfaces", "RestController",groupId);
+        // Crée les bons dossiers hexagonaux
+        createDirectories(basePath,
+            "domain/model",         // Entités métier
+            "domain/port/in",       // Ports d'entrée (interfaces des cas d'utilisation)
+            "domain/port/out",      // Ports de sortie (interfaces vers repo, external API, etc.)
+            "application/service",  // Implémentation des cas d'utilisation
+            "infrastructure/rest",  // Adapters REST (controllers)
+            "infrastructure/persistence", // Adapters de persistance (JPA, JDBC, etc.)
+            "config"                // Optionnel : config Spring Security, Swagger...
+        );
     }
+
 
     private void generateDefaultArchitecture(Path projectRoot) throws IOException {
         
