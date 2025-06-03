@@ -3,6 +3,7 @@ package com.example.project_generator.service;
 import com.example.project_generator.configuration.*;
 import com.example.project_generator.model.CustomProjectDescription;
 import com.example.project_generator.model.FieldDefinition;
+import com.example.project_generator.ia.TestIaGeneratorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
 
 
 @Service
@@ -49,6 +52,10 @@ public class ProjectGenerationService {
     @Autowired
     private GitLabCIContributor gitLabCIContributor;
 
+    @Autowired  
+    private TestIaGeneratorService testIaGeneratorService;
+
+
 
 
     @Autowired
@@ -73,6 +80,8 @@ public class ProjectGenerationService {
 
             generateEntities(description);
             generateRestControllers(description);
+            generateServiceAndRepository(description);
+
            
             projectSocketContributors.configureSockets();
 
@@ -236,27 +245,37 @@ public class ProjectGenerationService {
 
 
     private void generateTestClass(CustomProjectDescription description) throws IOException {
-      String basePackagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
-      String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase();
-      String className = capitalize(description.getArtifactId()) + "ApplicationTests";
+        String basePackagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
+        String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase();
 
-      Path testPath = projectDirectory.resolve("src/test/java/" + basePackagePath);
-      Files.createDirectories(testPath);
+        Path sourceDir = projectDirectory.resolve("src/main/java/" + basePackagePath + "/service");
+        Path testPath = projectDirectory.resolve("src/test/java/" + basePackagePath + "/service");
+        Files.createDirectories(testPath);
 
-      Path testFile = testPath.resolve(className + ".java");
+        if (!Files.exists(sourceDir)) return;
 
-      String content = "package " + packageName + ";\n\n"
-        + "import org.junit.jupiter.api.Test;\n"
-        + "import org.springframework.boot.test.context.SpringBootTest;\n\n"
-        + "@SpringBootTest\n"
-        + "public class " + className + " {\n\n"
-        + "    @Test\n"
-        + "    void contextLoads() {\n"
-        + "    }\n"
-        + "}\n";
+        try (Stream<Path> files = Files.list(sourceDir)) {
+          files
+            .filter(f -> f.getFileName().toString().endsWith("Service.java"))
+            .forEach(serviceFile -> {
+                try {
+                    String classCode = Files.readString(serviceFile);
+                    String className = serviceFile.getFileName().toString().replace(".java", "");
+                    String testClassName = className + "Test";
 
-      Files.write(testFile, content.getBytes());
+                    // Appel à ton service IA
+                    String testContent = testIaGeneratorService.generateTestClass(className, classCode);
+
+                    Path testFile = testPath.resolve(testClassName + ".java");
+                    Files.writeString(testFile, testContent);
+                    System.out.println("✅ Test généré pour : " + className);
+                } catch (Exception e) {
+                    System.err.println("❌ Erreur génération test pour " + serviceFile.getFileName() + ": " + e.getMessage());
+                }
+            });
+        }
     }
+
 
 
     private void generateApplicationProperties(CustomProjectDescription description) throws IOException {
@@ -482,7 +501,42 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
         }
     }
 }
+    private void generateServiceAndRepository(CustomProjectDescription description) throws IOException {
+        Map<String, List<FieldDefinition>> entityFieldsMap = description.getEntityFields();
+        String groupId = description.getGroupId();
+        String artifactId = description.getArtifactId().toLowerCase();
+        String basePackage = groupId + "." + artifactId;
+        String basePackagePath = groupId.replace(".", "/") + "/" + artifactId;
 
+        for (String entity : description.getEntities()) {
+           List<FieldDefinition> fields = entityFieldsMap.get(entity);
+           if (fields == null) continue;
+
+           FieldDefinition primaryKey = fields.stream()
+            .filter(FieldDefinition::isPrimaryKey)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Aucune clé primaire définie pour l'entité " + entity));
+
+          String entityVar = Character.toLowerCase(entity.charAt(0)) + entity.substring(1);
+          String pkType = primaryKey.getType();
+          String pkName = primaryKey.getName();
+
+          Map<String, Object> model = new HashMap<>();
+          model.put("packageName", basePackage);
+          model.put("entityName", entity);
+          model.put("entityVar", entityVar);
+          model.put("primaryKeyType", pkType);
+          model.put("primaryKeyName", pkName);
+
+          // Repository
+          Path repoPath = projectDirectory.resolve("src/main/java/" + basePackagePath + "/repository/" + entity + "Repository.java");
+          generateFromTemplate("Repository.java.ftl", model, repoPath);
+
+          // Service
+          Path servicePath = projectDirectory.resolve("src/main/java/" + basePackagePath + "/service/" + entity + "Service.java");
+          generateFromTemplate("Service.java.ftl", model, servicePath);
+        }
+    }
 
     public static class ProjectGenerationException extends RuntimeException {
         public ProjectGenerationException(String message, Throwable cause) {

@@ -32,24 +32,20 @@ public class ArchitectureContributors {
     
         
         String basePackageName = groupId + "." + artifactId.toLowerCase();
-        generateBaseClass(mainJavaPath, "service", "BaseService", basePackageName);
-        generateBaseClass(mainJavaPath, "repository", "BaseRepository", basePackageName);
     }
     
     private void generateHexagonalArchitecture(Path projectRoot, String groupId, String artifactId) throws IOException {
         String packageName = groupId + "." + artifactId.toLowerCase();
         String packagePath = packageName.replace(".", "/");
         Path basePath = projectRoot.resolve("src/main/java/" + packagePath);
-
-        // Crée les bons dossiers hexagonaux
         createDirectories(basePath,
-            "domain/model",   // Entités métier
-            "domain/port/in",       // Ports d'entrée (interfaces des cas d'utilisation)
-            "domain/port/out",      // Ports de sortie (interfaces vers repo, external API, etc.)
-            "application/service",  // Implémentation des cas d'utilisation
-            "infrastructure/rest",  // Adapters REST (controllers)
-            "infrastructure/persistence", // Adapters de persistance (JPA, JDBC, etc.)
-            "infrastructure/config"               // Optionnel : config Spring Security, Swagger...
+            "domain/model",   
+            "domain/port/in",      
+            "domain/port/out",      
+            "application/service",  
+            "infrastructure/rest",  
+            "infrastructure/persistence", 
+            "infrastructure/config"              
         );
     }
 
