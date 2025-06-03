@@ -3,7 +3,6 @@ package com.example.project_generator.service;
 import com.example.project_generator.configuration.*;
 import com.example.project_generator.model.CustomProjectDescription;
 import com.example.project_generator.model.FieldDefinition;
-import com.example.project_generator.ia.TestIaGeneratorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+
 
 
 
@@ -52,8 +51,6 @@ public class ProjectGenerationService {
     @Autowired
     private GitLabCIContributor gitLabCIContributor;
 
-    @Autowired  
-    private TestIaGeneratorService testIaGeneratorService;
 
 
 
@@ -105,7 +102,6 @@ public class ProjectGenerationService {
                 gitLabCIContributor.contribute(projectDirectory);
             }
 
-            generateTestClass(description);
             generateGitFiles();
             generateDocumentation(description);
 
@@ -243,38 +239,6 @@ public class ProjectGenerationService {
         generateFromTemplate("settings.gradle.ftl", model, projectDirectory.resolve("settings.gradle"));
     }
 
-
-    private void generateTestClass(CustomProjectDescription description) throws IOException {
-        String basePackagePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
-        String packageName = description.getGroupId() + "." + description.getArtifactId().toLowerCase();
-
-        Path sourceDir = projectDirectory.resolve("src/main/java/" + basePackagePath + "/service");
-        Path testPath = projectDirectory.resolve("src/test/java/" + basePackagePath + "/service");
-        Files.createDirectories(testPath);
-
-        if (!Files.exists(sourceDir)) return;
-
-        try (Stream<Path> files = Files.list(sourceDir)) {
-          files
-            .filter(f -> f.getFileName().toString().endsWith("Service.java"))
-            .forEach(serviceFile -> {
-                try {
-                    String classCode = Files.readString(serviceFile);
-                    String className = serviceFile.getFileName().toString().replace(".java", "");
-                    String testClassName = className + "Test";
-
-                    // Appel à ton service IA
-                    String testContent = testIaGeneratorService.generateTestClass(className, classCode);
-
-                    Path testFile = testPath.resolve(testClassName + ".java");
-                    Files.writeString(testFile, testContent);
-                    System.out.println("✅ Test généré pour : " + className);
-                } catch (Exception e) {
-                    System.err.println("❌ Erreur génération test pour " + serviceFile.getFileName() + ": " + e.getMessage());
-                }
-            });
-        }
-    }
 
 
 
