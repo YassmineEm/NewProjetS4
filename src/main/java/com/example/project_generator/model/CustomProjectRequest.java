@@ -26,7 +26,15 @@ public class CustomProjectRequest {
     private String mavenVersion;
     private Map<String, Boolean> restEndpoints;
     private Map<String, List<FieldDefinition>> entityFields;
+    private boolean generateTests = true;   
 
+    public boolean isGenerateTests() {
+        return generateTests;
+    }
+
+    public void setGenerateTests(boolean generateTests) {
+        this.generateTests = generateTests;
+    }
 
     public Map<String, List<FieldDefinition>> getEntityFields() {
        return entityFields;

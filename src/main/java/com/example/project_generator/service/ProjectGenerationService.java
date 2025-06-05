@@ -104,7 +104,10 @@ public class ProjectGenerationService {
 
             generateGitFiles();
             generateDocumentation(description);
-            generateTests(description);
+            if (description.isGenerateTests()) {
+               generateTests(description);   
+            }
+
 
             return projectDirectory.toAbsolutePath().toString();
 

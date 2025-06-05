@@ -42,6 +42,15 @@ public class CustomProjectDescription implements ProjectDescription {
     private Set<String> dependencies = new HashSet<>();
     private Map<String, Boolean> restEndpoints;
     private Map<String, List<FieldDefinition>> entityFields;
+    private boolean generateTests = true;   
+
+    public boolean isGenerateTests() {
+        return generateTests;
+    }
+
+    public void setGenerateTests(boolean generateTests) {
+        this.generateTests = generateTests;
+    }
 
 
     public Map<String, List<FieldDefinition>> getEntityFields() {

@@ -176,6 +176,10 @@ request.setEntityFields(entityFields);
         }
         request.setRestEndpoints(restEndpointChoices);
 
+        System.out.print("Générer les classes de test ? (y/n, défaut y): ");
+        request.setGenerateTests(!scanner.nextLine().equalsIgnoreCase("n"));
+
+
         System.out.println("\n🤖 Recommandations IA (DeepSeek) :");
 
         String summary = String.format("""

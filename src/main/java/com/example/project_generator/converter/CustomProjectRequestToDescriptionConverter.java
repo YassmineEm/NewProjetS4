@@ -26,6 +26,7 @@ public class CustomProjectRequestToDescriptionConverter {
         description.setMavenVersion(request.getMavenVersion());
         description.setEntityFields(request.getEntityFields());
         description.setRestEndpoints(request.getRestEndpoints());
+        description.setGenerateTests(request.isGenerateTests());
         return description;
     }
 }
