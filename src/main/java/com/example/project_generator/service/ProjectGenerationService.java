@@ -104,6 +104,7 @@ public class ProjectGenerationService {
 
             generateGitFiles();
             generateDocumentation(description);
+            generateTests(description);
 
             return projectDirectory.toAbsolutePath().toString();
 
@@ -530,6 +531,63 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
     }
 }
 
+private void generateTests(CustomProjectDescription description) throws IOException {
+    String basePath = description.getGroupId().replace(".", "/") + "/" + description.getArtifactId().toLowerCase();
+    Path testPath = projectDirectory.resolve("src/test/java/" + basePath);
+
+    if (!Files.exists(testPath)) {
+        Files.createDirectories(testPath);
+    }
+
+    for (String entity : description.getEntities()) {
+        // === 1. Entity test ===
+        Path entityTestPath = testPath.resolve("model/" + entity + "Test.java");
+        Files.createDirectories(entityTestPath.getParent());
+        generateFromTemplate("EntityTest.java.ftl", Map.of(
+            "packageName", description.getPackageName(),
+            "entityName", entity
+        ), entityTestPath);
+
+        // === 2. Controller test ===
+        if (Boolean.TRUE.equals(description.getRestEndpoints().get(entity))) {
+            Path controllerTestPath;
+            String controllerPackage;
+
+            if ("hexagonale".equalsIgnoreCase(description.getArchitectureType())) {
+                controllerPackage = description.getPackageName() + ".infrastructure.rest";
+                controllerTestPath = testPath.resolve("infrastructure/rest/" + entity + "ControllerTest.java");
+            } else {
+                controllerPackage = description.getPackageName() + ".controller";
+                controllerTestPath = testPath.resolve("controller/" + entity + "ControllerTest.java");
+            }
+
+            Files.createDirectories(controllerTestPath.getParent());
+            generateFromTemplate("ControllerTest.java.ftl", Map.of(
+                "packageName", controllerPackage,
+                "entityName", entity,
+                "architecture", description.getArchitectureType()
+            ), controllerTestPath);
+        }
+
+        // === 3. Service test ===
+        Path serviceTestPath;
+        String servicePackage;
+
+        if ("hexagonale".equalsIgnoreCase(description.getArchitectureType())) {
+            servicePackage = description.getPackageName() + ".application.service";
+            serviceTestPath = testPath.resolve("application/service/" + entity + "ServiceTest.java");
+        } else {
+            servicePackage = description.getPackageName() + ".service";
+            serviceTestPath = testPath.resolve("service/" + entity + "ServiceTest.java");
+        }
+
+        Files.createDirectories(serviceTestPath.getParent());
+        generateFromTemplate("ServiceTest.java.ftl", Map.of(
+            "packageName", servicePackage,
+            "entityName", entity
+        ), serviceTestPath);
+    }
+}
 
     public static class ProjectGenerationException extends RuntimeException {
         public ProjectGenerationException(String message, Throwable cause) {
