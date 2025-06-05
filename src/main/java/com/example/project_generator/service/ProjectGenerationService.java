@@ -466,41 +466,70 @@ private void addGradleDependencies(Map<String, Dependency> requestedDeps, String
     }
 }
     private void generateServiceAndRepository(CustomProjectDescription description) throws IOException {
-        Map<String, List<FieldDefinition>> entityFieldsMap = description.getEntityFields();
-        String groupId = description.getGroupId();
-        String artifactId = description.getArtifactId().toLowerCase();
-        String basePackage = groupId + "." + artifactId;
-        String basePackagePath = groupId.replace(".", "/") + "/" + artifactId;
+    Map<String, List<FieldDefinition>> entityFieldsMap = description.getEntityFields();
+    String groupId = description.getGroupId();
+    String artifactId = description.getArtifactId().toLowerCase();
+    String basePackage = groupId + "." + artifactId;
+    String basePackagePath = groupId.replace(".", "/") + "/" + artifactId;
 
-        for (String entity : description.getEntities()) {
-           List<FieldDefinition> fields = entityFieldsMap.get(entity);
-           if (fields == null) continue;
+    for (String entity : description.getEntities()) {
+        List<FieldDefinition> fields = entityFieldsMap.get(entity);
+        if (fields == null) continue;
 
-           FieldDefinition primaryKey = fields.stream()
+        FieldDefinition primaryKey = fields.stream()
             .filter(FieldDefinition::isPrimaryKey)
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("Aucune clé primaire définie pour l'entité " + entity));
 
-          String entityVar = Character.toLowerCase(entity.charAt(0)) + entity.substring(1);
-          String pkType = primaryKey.getType();
-          String pkName = primaryKey.getName();
+        String entityVar = Character.toLowerCase(entity.charAt(0)) + entity.substring(1);
+        String pkType = primaryKey.getType();
+        String pkName = primaryKey.getName();
 
-          Map<String, Object> model = new HashMap<>();
-          model.put("packageName", basePackage);
-          model.put("entityName", entity);
-          model.put("entityVar", entityVar);
-          model.put("primaryKeyType", pkType);
-          model.put("primaryKeyName", pkName);
+        // Initialiser les chemins et packages dynamiquement selon l’architecture
+        String repositoryPackagePath;
+        String repositoryPackage;
+        String servicePackagePath;
+        String servicePackage;
+        String modelPackage;
 
-          // Repository
-          Path repoPath = projectDirectory.resolve("src/main/java/" + basePackagePath + "/repository/" + entity + "Repository.java");
-          generateFromTemplate("Repository.java.ftl", model, repoPath);
+        if ("hexagonale".equalsIgnoreCase(description.getArchitectureType())) {
+            repositoryPackagePath = basePackagePath + "/infrastructure/persistence";
+            repositoryPackage = basePackage + ".infrastructure.persistence";
 
-          // Service
-          Path servicePath = projectDirectory.resolve("src/main/java/" + basePackagePath + "/service/" + entity + "Service.java");
-          generateFromTemplate("Service.java.ftl", model, servicePath);
+            servicePackagePath = basePackagePath + "/application/service";
+            servicePackage = basePackage + ".application.service";
+
+            modelPackage = basePackage + ".domain.model";
+        } else {
+            repositoryPackagePath = basePackagePath + "/repository";
+            repositoryPackage = basePackage + ".repository";
+
+            servicePackagePath = basePackagePath + "/service";
+            servicePackage = basePackage + ".service";
+
+            modelPackage = basePackage + ".model";
         }
+
+        // Préparer le modèle à injecter dans les templates
+        Map<String, Object> model = new HashMap<>();
+        model.put("entityName", entity);
+        model.put("entityVar", entityVar);
+        model.put("primaryKeyType", pkType);
+        model.put("primaryKeyName", pkName);
+        model.put("repositoryPackage", repositoryPackage);
+        model.put("servicePackage", servicePackage);
+        model.put("modelPackage", modelPackage);
+
+        // Générer le repository
+        Path repoPath = projectDirectory.resolve("src/main/java/" + repositoryPackagePath + "/" + entity + "Repository.java");
+        generateFromTemplate("Repository.java.ftl", model, repoPath);
+
+        // Générer le service
+        Path servicePath = projectDirectory.resolve("src/main/java/" + servicePackagePath + "/" + entity + "Service.java");
+        generateFromTemplate("Service.java.ftl", model, servicePath);
     }
+}
+
 
     public static class ProjectGenerationException extends RuntimeException {
         public ProjectGenerationException(String message, Throwable cause) {

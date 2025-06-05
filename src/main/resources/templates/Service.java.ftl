@@ -1,10 +1,10 @@
-package ${packageName}.service;
+package ${servicePackage};
 
 import java.util.List;
 import java.util.Optional;
 
-import ${packageName}.model.${entityName};
-import ${packageName}.repository.${entityName}Repository;
+import ${modelPackage}.${entityName};
+import ${repositoryPackage}.${entityName}Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,4 +30,5 @@ public class ${entityName}Service {
         ${entityVar}Repository.deleteById(${primaryKeyName});
     }
 }
+
 
