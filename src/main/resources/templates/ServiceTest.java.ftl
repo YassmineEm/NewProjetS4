@@ -1,23 +1,26 @@
 package ${packageName};
 
+import ${packageName?replace(".service", ".model")}.${entityName};
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
 public class ${entityName}ServiceTest {
 
-    @Autowired
-    private ${entityName}Service service;
-
     @Test
-    public void testServiceNotNull() {
+    public void testServiceInstance() {
+        ${entityName}Service service = mock(${entityName}Service.class);
         assertNotNull(service);
     }
 
     @Test
     public void testCreateEntity() {
-        // TODO : compléter le test
+        ${entityName}Service service = mock(${entityName}Service.class);
+        ${entityName} entity = new ${entityName}();
+        when(service.save(any(${entityName}.class))).thenReturn(entity);
+
+        ${entityName} result = service.save(entity);
+        assertNotNull(result);
     }
 }
+

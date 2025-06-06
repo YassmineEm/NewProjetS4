@@ -92,8 +92,6 @@ public class CommandLineInterface implements CommandLineRunner {
             request.setDockerRepository(dockerRepo.isEmpty() ? "your-default-repo" : dockerRepo);
         }
         
-        System.out.print("Générer Kubernetes ? (y/n): ");
-        request.setGenerateKubernetes(scanner.nextLine().equalsIgnoreCase("y"));
         
         System.out.print("Générer CI/CD (GitLab CI) ? (y/n): ");
         request.setGenerateCLCG(scanner.nextLine().equalsIgnoreCase("y"));
@@ -176,8 +174,12 @@ request.setEntityFields(entityFields);
         }
         request.setRestEndpoints(restEndpointChoices);
 
-        System.out.print("Générer les classes de test ? (y/n, défaut y): ");
-        request.setGenerateTests(!scanner.nextLine().equalsIgnoreCase("n"));
+        if (request.getArchitectureType().equalsIgnoreCase("en-couches")) {
+         System.out.print("Générer les classes de test ? (y/n, défaut y): ");
+         request.setGenerateTests(!scanner.nextLine().equalsIgnoreCase("n"));
+        } else {
+         request.setGenerateTests(false); // Aucune génération pour hexagonale
+        }
 
 
         System.out.println("\n🤖 Recommandations IA (DeepSeek) :");
